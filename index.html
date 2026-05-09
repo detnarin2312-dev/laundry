@@ -616,12 +616,13 @@ if (
     &&
     machine.end_time
   ) {
+    if (!timers[machine.id]) {
 
     startCountdown(
       machine.id,
       machine.end_time
     )
-
+    }
     // 🔥 disable controls
     document.getElementById(
       `button-${machine.id}`
@@ -736,6 +737,7 @@ async function startCountdown(machineId, endTime) {
     if (timers[machineId]) {
 
   clearInterval(timers[machineId])
+  
 
   }
   timers[machineId] = setInterval(async () => {
@@ -744,6 +746,31 @@ async function startCountdown(machineId, endTime) {
 
     const remaining =
       endTime - now
+
+    // 🔥 check machine ล่าสุด
+const { data: latestMachine } =
+  await supabase
+    .from('machine')
+    .select('*')
+    .eq('id', machineId)
+    .single()
+
+// 🔥 ถ้า machine ไม่ได้ In Use แล้ว
+// หยุด timer ทุก client
+if (
+  latestMachine.status !==
+  "In Use"
+) {
+
+  clearInterval(
+    timers[machineId]
+  )
+  delete timers[machineId]
+
+  loadStatus()
+
+  return
+}
 
     // 🔥 ถ้าหมดเวลา
     if (remaining <= 0) {
@@ -765,6 +792,7 @@ if (
   clearInterval(
     timers[machineId]
   )
+  delete timers[machineId]
 
   return
 }
@@ -808,6 +836,22 @@ if (
     .select('*')
     .eq('id', machineId)
     .single()
+
+    // 🔥 ถ้า machine ไม่ได้ In Use แล้ว
+if (
+  machineData.status !==
+  "In Use"
+) {
+
+  clearInterval(
+    timers[machineId]
+  )
+  delete timers[machineId]
+
+  loadStatus()
+
+  return
+}
 
 let extraInfo = ""
 
@@ -1046,6 +1090,7 @@ window.pickedUp =
     clearInterval(
   timers[machineId]
 )
+delete timers[machineId]
 
   extendUI[machineId] = false
 
@@ -1163,8 +1208,10 @@ window.finishEarly =
   clearInterval(
     timers[machineId]
   )
+  delete timers[machineId]
 
   extendUI[machineId] = false
+  
 
   // 🔥 เปลี่ยนเป็น Finished
   const { data, error } =
@@ -1266,51 +1313,7 @@ window.showExtend = function(machineId) {
 await renderMachines()
 
 loadStatus()
-setInterval(async () => {
 
-  const { data } =
-    await supabase
-      .from('machine')
-      .select('*')
-
-  if (!data) return
-
-  data.forEach(machine => {
-
-    // 🔥 owner เท่านั้น
-    if (
-      machine.owner !== userId
-    ) return
-
-    // 🔥 ต้อง Finished
-    if (
-      machine.status !== 'Finished'
-    ) return
-
-    // 🔥 ต้องมี finished_at
-    if (!machine.finished_at)
-      return
-
-    const now = Date.now()
-
-    const finishedAgo =
-      now - machine.finished_at
-
-    // 🔥 ทุก 3 นาที
-    if (
-      finishedAgo >=
-      3 * 60 * 1000
-    ) {
-
-      notifyPickup(
-        machine.name
-      )
-
-    }
-
-  })
-
-}, 180000)
 
 setInterval(async () => {
 
