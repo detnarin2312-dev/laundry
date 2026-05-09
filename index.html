@@ -790,36 +790,7 @@ if (
       console.log(data)
       console.log(error)
       
-      if (
-  Notification.permission ===
-  "granted"
-) {
-
-  const { data: machineData } =
-  await supabase
-    .from('machine')
-    .select('*')
-    .eq('id', machineId)
-    .single()
-
-let extraInfo = ""
-
-let queueInfo = ""
-
-let queue = []
-
-  // 🔥 owner เท่านั้น
-  if (
-    machineData.owner === userId
-  ) {
-
-    notifyPickup(
-      machineData.name
-    )
-
-  }
-
-}
+    
       return
     }
 
@@ -971,14 +942,7 @@ document.getElementById(
 }
 
 window.startMachine = async function(machineId) {
-if (
-  Notification.permission !==
-  "granted"
-) {
 
-  await Notification.requestPermission()
-
-}
   const { data: machineData } =
   await supabase
     .from('machine')
@@ -1296,18 +1260,6 @@ window.showExtend = function(machineId) {
   extendUI[machineId] = true
 
   loadStatus()
-
-}
-
-function notifyPickup(machineName) {
-
-  new Notification(
-    "Laundry System",
-    {
-      body:
-        `${machineName} is finished. Please pick up your laundry.`
-    }
-  )
 
 }
 
