@@ -14,8 +14,11 @@
 }
 
 body {
+
   margin: 0;
   padding: 40px 20px;
+  overflow-x: hidden;
+-webkit-tap-highlight-color: transparent;
   font-family:
     Inter,
     Arial,
@@ -320,11 +323,15 @@ and
 
   line-height: 1.8;
 }
+button {
+  touch-action: manipulation;
+}
 </style>
 
 </head>
 
 <body>
+
 
 <h1>🧺 Laundry System</h1>
 
@@ -708,6 +715,27 @@ async function startCountdown(machineId, endTime) {
 
     // 🔥 ถ้าหมดเวลา
     if (remaining <= 0) {
+        // 🔥 check machine state ล่าสุด
+const { data: latestMachine } =
+  await supabase
+    .from('machine')
+    .select('*')
+    .eq('id', machineId)
+    .single()
+
+// 🔥 ถ้าไม่ใช่ In Use แล้ว
+// ห้าม overwrite
+if (
+  latestMachine.status !==
+  "In Use"
+) {
+
+  clearInterval(
+    timers[machineId]
+  )
+
+  return
+}
 
       clearInterval(timers[machineId])
 
@@ -1417,8 +1445,6 @@ supabase
     async payload => {
 
        console.log(payload)
-
-       await renderMachines()
 
        loadStatus()
 
