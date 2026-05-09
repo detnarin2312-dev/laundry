@@ -1,0 +1,1285 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <title>Laundry System</title>
+   <meta
+  name="viewport"
+  content="width=device-width, initial-scale=1.0"
+/>
+  <style>
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  padding: 40px 20px;
+  font-family:
+    Inter,
+    Arial,
+    sans-serif;
+
+  background:
+    linear-gradient(
+      135deg,
+      #f8fafc,
+      #e2e8f0
+    );
+
+  min-height: 100vh;
+  color: #0f172a;
+}
+
+h1 {
+  text-align: center;
+  font-size: 40px;
+  margin-bottom: 40px;
+  font-weight: 700;
+}
+
+#machinesContainer {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 24px;
+  justify-content: center;
+}
+
+.machine {
+  width: 100%;
+  max-width: 340px;
+
+  background:
+    rgba(255,255,255,0.7);
+
+  backdrop-filter: blur(12px);
+
+  border:
+    1px solid rgba(255,255,255,0.4);
+
+  border-radius: 28px;
+
+  padding: 28px;
+
+  box-shadow:
+    0 10px 30px
+    rgba(0,0,0,0.08);
+
+  transition: 0.25s;
+}
+
+.machine:hover {
+  transform: translateY(-4px);
+
+  box-shadow:
+    0 18px 40px
+    rgba(0,0,0,0.12);
+}
+
+.machine h2 {
+  margin-top: 0;
+  margin-bottom: 18px;
+
+  font-size: 26px;
+  font-weight: 700;
+}
+
+.machine p {
+  line-height: 1.7;
+  font-size: 16px;
+}
+
+input {
+  width: 100%;
+
+  padding: 14px;
+
+  border-radius: 16px;
+
+  border:
+    1px solid #dbeafe;
+
+  background: white;
+
+  font-size: 16px;
+
+  outline: none;
+
+  transition: 0.2s;
+}
+
+input:focus {
+  border-color: #3b82f6;
+
+  box-shadow:
+    0 0 0 4px
+    rgba(59,130,246,0.15);
+}
+
+button {
+  width: 100%;
+
+  padding: 14px;
+
+  border: none;
+
+  border-radius: 16px;
+
+  background: #2563eb;
+
+  color: white;
+
+  font-size: 16px;
+  font-weight: 600;
+
+  cursor: pointer;
+
+  transition: 0.2s;
+}
+
+button:hover {
+  background: #1d4ed8;
+  transform: scale(1.02);
+}
+
+button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+
+@media (max-width: 768px) {
+
+  body {
+    padding: 18px 12px;
+  }
+
+  h1 {
+    font-size: 28px;
+    margin-bottom: 24px;
+  }
+
+  #machinesContainer {
+    gap: 18px;
+  }
+
+  .machine {
+    width: 100%;
+    padding: 22px;
+    border-radius: 24px;
+  }
+
+  .machine h2 {
+    font-size: 22px;
+  }
+
+  .status {
+    font-size: 15px;
+    min-height: auto;
+  }
+
+  button {
+    font-size: 15px;
+    padding: 15px;
+  }
+
+  input {
+    font-size: 16px;
+  }
+
+}
+
+.status {
+  background:
+    rgba(255,255,255,0.8);
+
+  padding: 16px;
+
+  border-radius: 18px;
+
+  margin-bottom: 18px;
+
+  min-height: 90px;
+
+  border:
+    1px solid rgba(255,255,255,0.4);
+}
+
+@media (
+  min-width: 769px
+)
+and
+(
+  max-width: 1200px
+) {
+
+  #machinesContainer {
+    justify-content: center;
+  }
+
+  .machine {
+    max-width: 45%;
+  }
+
+}
+</style>
+
+</head>
+
+<body>
+
+<h1>🧺 Laundry System</h1>
+
+<div id="machinesContainer"></div>
+
+<script type="module">
+
+import { createClient }
+from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm'
+
+// 🔥 ใส่ URL และ KEY ของคุณ
+const supabaseUrl =
+  'https://hjeeirnzsihqdetikebw.supabase.co'
+
+const supabaseKey =
+  'sb_publishable_mrXA2zbOkf1QeZ0AdftOlA_oV86BWC5'
+
+const supabase =
+  createClient(supabaseUrl, supabaseKey)
+const timers = {}
+const extendUI = {}
+
+let userId =
+  localStorage.getItem("userId")
+
+// 🔥 ถ้ายังไม่มี userId
+if (!userId) {
+
+  userId =
+    "user_" +
+    Math.random()
+      .toString(36)
+      .substring(2, 8)
+
+  localStorage.setItem(
+    "userId",
+    userId
+  )
+
+}
+
+console.log("User ID:", userId)
+console.log("Supabase Connected!")
+
+
+async function renderMachines() {
+
+  const { data, error } =
+    await supabase
+      .from('machine')
+      .select('*')
+      .order('id')
+
+  console.log(data)
+
+  const container =
+    document.getElementById("machinesContainer")
+
+  container.innerHTML = ""
+
+  data.forEach(machine => {
+    
+    console.log("Rendering:", machine.name)
+
+    container.innerHTML += `
+
+      <div class="machine">
+
+        <h2>${machine.name}</h2>
+
+        <p
+  class="status"
+  id="status-${machine.id}"
+>
+          🟢 Available
+        </p>
+
+        <input
+          type="number"
+          id="minutesInput-${machine.id}"
+          placeholder="Minutes"
+          min="1"
+        />
+
+        <br><br>
+
+        <button
+            id="button-${machine.id}"
+            onclick="startMachine(${machine.id})"
+        >
+          Start Machine
+        </button>
+
+      </div>
+
+      <br>
+    `
+  })
+
+}
+
+async function loadStatus() {
+
+  const { data, error } =
+    await supabase
+      .from('machine')
+      .select('*')
+
+  console.log(data)
+
+  if (!data) return
+
+  data.forEach(machine => {
+
+    let queueInfo = ""
+
+let queue = []
+
+if (
+  machine.queue &&
+  machine.queue !== ""
+) {
+
+  queue =
+    machine.queue.split(',')
+
+}
+
+// 🔥 ถ้า user อยู่ใน queue
+const queuePosition =
+  queue.indexOf(userId)
+
+// 🔥 user อยู่ใน queue
+if (queuePosition !== -1) {
+
+  // 🔥 ถึงคิวจริง
+  if (
+    machine.current_queue_user ===
+    userId
+  ) {
+
+    queueInfo =
+
+      `<br><br>
+
+       🟢 It's your turn`
+
+  }
+
+  else {
+
+    queueInfo =
+
+      `<br><br>
+
+       You are #${queuePosition + 1}
+       in queue`
+
+  }
+
+}
+
+// 🔥 user ไม่ได้อยู่ใน queue
+else {
+
+  queueInfo =
+
+    `<br><br>
+
+     Queue:
+     ${queue.length}
+     people`
+}
+
+  // 🔥 reset status ก่อน
+  document.getElementById(
+  `status-${machine.id}`
+).innerHTML =
+
+  `🟢 Available
+
+   ${queueInfo}`
+
+  // 🔥 enable controls ก่อน
+  document.getElementById(
+    `button-${machine.id}`
+  ).disabled = false
+
+  document.getElementById(
+    `minutesInput-${machine.id}`
+  ).disabled = false
+
+// 🔥 reserved for queue user
+if (
+  machine.current_queue_user
+  &&
+  machine.current_queue_user !== userId
+) {
+
+  document.getElementById(
+    `button-${machine.id}`
+  ).disabled = true
+
+  document.getElementById(
+    `minutesInput-${machine.id}`
+  ).disabled = true
+
+}
+
+  // 🔥 ถ้ากำลังใช้งาน
+  if (
+    machine.status === 'In Use'
+    &&
+    machine.end_time
+  ) {
+
+    startCountdown(
+      machine.id,
+      machine.end_time
+    )
+
+    // 🔥 disable controls
+    document.getElementById(
+      `button-${machine.id}`
+    ).disabled = true
+
+    document.getElementById(
+      `minutesInput-${machine.id}`
+    ).disabled = true
+
+  }
+  if (machine.status === 'Finished') {
+
+  const finishedTime =
+    new Date(machine.finished_at)
+
+   // 🔥 ถ้าเป็น owner
+if (machine.owner === userId) {
+
+  let extendSection = ""
+
+  // 🔥 ถ้ากด Machine Still Running แล้ว
+  if (extendUI[machine.id]) {
+
+    extendSection = `
+
+      <br><br>
+
+      <input
+        type="number"
+        id="extendInput-${machine.id}"
+        placeholder="Extend minutes"
+        min="1"
+      />
+
+      <br><br>
+
+      <button
+        onclick="extendMachine(${machine.id})"
+      >
+        Extend Time
+      </button>
+    `
+  }
+
+  document.getElementById(
+    `status-${machine.id}`
+  ).innerHTML =
+
+    `🟠 Finished<br>
+     at:
+     ${finishedTime.toLocaleTimeString()}
+     ${queueInfo}
+     <br><br>
+
+     <button
+       style="
+         padding:15px;
+         font-size:18px;
+       "
+       onclick="pickedUp(${machine.id})"
+     >
+       Picked Up
+     </button>
+
+     <br><br>
+
+     <button
+       onclick="showExtend(${machine.id})"
+     >
+       Machine Still Running
+     </button>
+
+     ${extendSection}`
+
+}
+
+  // 🔥 ถ้าไม่ใช่ owner
+  else {
+
+  document.getElementById(
+    `status-${machine.id}`
+  ).innerHTML =
+
+    `🟠 Finished<br>
+     at:
+     ${finishedTime.toLocaleTimeString()}
+     ${queueInfo}
+     <br><br>
+
+     Waiting for owner pickup`
+
+    }
+
+  // 🔥 disable controls
+  document.getElementById(
+    `button-${machine.id}`
+  ).disabled = true
+
+  document.getElementById(
+    `minutesInput-${machine.id}`
+  ).disabled = true
+
+}
+    
+})
+
+}
+
+
+async function startCountdown(machineId, endTime) {
+
+    if (timers[machineId]) {
+
+  clearInterval(timers[machineId])
+
+  }
+  timers[machineId] = setInterval(async () => {
+
+    const now = Date.now()
+
+    const remaining =
+      endTime - now
+
+    // 🔥 ถ้าหมดเวลา
+    if (remaining <= 0) {
+
+      clearInterval(timers[machineId])
+
+      extendUI[machineId] = false
+
+      document.getElementById(`status-${machineId}`).innerHTML =
+        "🟢 Available"
+
+      // 🔥 update database
+      const { data, error } =
+        await supabase
+          .from('machine')
+          .update({
+                status: 'Finished',
+                finished_at: Date.now(),
+                end_time: null
+            })
+          .eq('id', machineId)
+
+      console.log(data)
+      console.log(error)
+      
+      if (
+  Notification.permission ===
+  "granted"
+) {
+
+  const { data: machineData } =
+  await supabase
+    .from('machine')
+    .select('*')
+    .eq('id', machineId)
+    .single()
+
+let extraInfo = ""
+
+let queueInfo = ""
+
+let queue = []
+
+  // 🔥 owner เท่านั้น
+  if (
+    machineData.owner === userId
+  ) {
+
+    notifyPickup(
+      machineData.name
+    )
+
+  }
+
+}
+      return
+    }
+
+    // 🔥 คำนวณเวลา
+    const minutes =
+      Math.floor(remaining / 1000 / 60)
+
+    const seconds =
+      Math.floor((remaining / 1000) % 60)
+
+    // 🔥 แสดง countdown
+    const { data: machineData } =
+  await supabase
+    .from('machine')
+    .select('*')
+    .eq('id', machineId)
+    .single()
+
+let extraInfo = ""
+
+let queueInfo = ""
+
+let queue = []
+
+if (
+  machineData.queue &&
+  machineData.queue !== ""
+) {
+
+  queue =
+    machineData.queue.split(',')
+
+}
+
+// 🔥 หา position
+const queuePosition =
+  queue.indexOf(userId)
+
+// 🔥 ถ้า user อยู่ใน queue
+if (queuePosition !== -1) {
+
+  if (
+    machineData.current_queue_user ===
+    userId
+  ) {
+
+    queueInfo =
+
+      `<br><br>
+
+       🟢 It's your turn`
+
+  }
+
+  else {
+
+    queueInfo =
+
+      `<br><br>
+
+       You are #${queuePosition + 1}
+       in queue`
+
+  }
+
+}
+
+// 🔥 ถ้าไม่ได้อยู่ใน queue
+else {
+
+  queueInfo =
+
+    `<br><br>
+
+     Queue:
+     ${queue.length}
+     people`
+}
+
+if (machineData.extended_minutes) {
+
+  const finishedTime =
+    new Date(machineData.finished_at)
+
+ extraInfo = `
+
+    <br>
+
+    Finished at:
+    ${finishedTime.toLocaleTimeString()}
+
+    <br>
+
+    Extended by:
+    ${machineData.extended_minutes} min
+
+    <br><br>
+  `
+}
+
+document.getElementById(
+  `status-${machineId}`
+).innerHTML =
+
+  `🟡 In Use
+
+   ${extraInfo}
+
+   Remaining:
+   ${minutes}:${seconds
+      .toString()
+      .padStart(2, '0')}
+
+   <br><br>
+
+   ${queueInfo}
+
+   <br><br>
+
+   <button
+     onclick="finishEarly(${machineId})"
+   >
+     Machine Finished Early
+   </button>
+
+   <br><br>
+
+   <button
+     onclick="joinQueue(${machineId})"
+   >
+     Join Queue
+   </button>`
+
+  }, 1000)
+
+}
+
+window.startMachine = async function(machineId) {
+if (
+  Notification.permission !==
+  "granted"
+) {
+
+  await Notification.requestPermission()
+
+}
+  const { data: machineData } =
+  await supabase
+    .from('machine')
+    .select('*')
+    .eq('id', machineId)
+    .single()
+
+let queue = []
+
+if (
+  machineData.queue &&
+  machineData.queue !== ""
+) {
+
+  queue =
+    machineData.queue.split(',')
+
+}
+
+// 🔥 ถ้าเป็นคนที่ถูกเรียก
+if (
+  machineData.current_queue_user ===
+  userId
+) {
+
+  queue.shift()
+
+}
+
+// 🔥 ถ้ามีคนถูกเรียกคิว
+if (
+  machineData.current_queue_user
+  &&
+  machineData.current_queue_user
+    !== userId
+) {
+
+  alert(
+    "This machine is reserved for the next queue."
+  )
+
+  return
+
+}
+  // 🔥 อ่านค่าจาก input
+  const minutes =
+    document.getElementById(`minutesInput-${machineId}`).value
+
+  // 🔥 ถ้ายังไม่กรอก
+  if (!minutes) {
+
+    alert("Please enter minutes")
+
+    return
+  }
+
+  // 🔥 คำนวณเวลาสิ้นสุด
+  const endTime =
+    Date.now() + (minutes * 60 * 1000)
+
+  // 🔥 เปลี่ยน status บนเว็บ
+  document.getElementById(`status-${machineId}`).innerHTML =
+    `🟡 In Use Remaining : (${minutes} min)
+    <br><br>
+
+<button
+  onclick="finishEarly(${machineId})"
+>
+  Machine Finished Early
+</button>`
+
+  // 🔥 save ลง Supabase
+  const { data, error } =
+    await supabase
+      .from('machine')
+      .update({
+      status: 'In Use',
+      end_time: endTime,
+      queue: queue.join(','),
+      owner: userId,
+      queue_called_at: null,
+      extended_minutes: null,
+      current_queue_user: null,
+      finished_at: null
+})
+      .eq('id', machineId)
+
+  console.log(data)
+  console.log(error)
+  startCountdown(machineId, endTime)  
+  
+  
+  // 🔥 popup
+  alert("Machine Started!")
+
+}
+
+window.pickedUp =
+  async function(machineId) {
+
+    clearInterval(
+  timers[machineId]
+)
+
+  extendUI[machineId] = false
+
+  const { data: machineData } =
+    await supabase
+      .from('machine')
+      .select('*')
+      .eq('id', machineId)
+      .single()
+
+  let queue = []
+
+  if (
+    machineData.queue &&
+    machineData.queue !== ""
+  ) {
+
+    queue =
+      machineData.queue.split(',')
+
+  }
+
+  // 🔥 มี queue
+  if (queue.length > 0) {
+
+    const nextUser =
+      queue[0]
+
+    const { data, error } =
+      await supabase
+        .from('machine')
+        .update({
+          status: 'Available',
+          end_time: null,
+          finished_at: null,
+          owner: null,
+          extended_minutes: null,
+
+          current_queue_user:
+            nextUser,
+
+          queue:
+            machineData.queue,
+
+          queue_called_at:
+            Date.now()
+        })
+        .eq('id', machineId)
+
+    console.log(data)
+    console.log(error)
+
+    return
+  }
+
+  // 🔥 ไม่มี queue
+  const { data, error } =
+    await supabase
+      .from('machine')
+      .update({
+        status: 'Available',
+        end_time: null,
+        finished_at: null,
+        owner: null,
+        extended_minutes: null,
+        current_queue_user: null,
+        queue: "",
+        queue_called_at: null
+      })
+      .eq('id', machineId)
+
+  console.log(data)
+  console.log(error)
+
+}
+
+
+window.extendMachine = async function(machineId) {
+
+  const minutes =
+    document.getElementById(
+      `extendInput-${machineId}`
+    ).value
+
+  if (!minutes) return
+
+  const extraMinutes =
+    parseInt(minutes)
+
+  const newEndTime =
+    Date.now() +
+    (extraMinutes * 60 * 1000)
+
+  const { data, error } =
+    await supabase
+      .from('machine')
+      .update({
+        status: 'In Use',
+        end_time: newEndTime,
+        extended_minutes: extraMinutes,
+        finished_at: Date.now()
+      })
+      .eq('id', machineId)
+
+  console.log(data)
+  console.log(error)
+
+}
+
+
+window.finishEarly =
+  async function(machineId) {
+
+  // 🔥 หยุด timer
+  clearInterval(
+    timers[machineId]
+  )
+
+  extendUI[machineId] = false
+
+  // 🔥 เปลี่ยนเป็น Finished
+  const { data, error } =
+    await supabase
+      .from('machine')
+      .update({
+        status: 'Finished',
+        finished_at: Date.now(),
+        end_time: null
+      })
+      .eq('id', machineId)
+
+  console.log(data)
+  console.log(error)
+
+}
+
+window.joinQueue =
+  async function(machineId) {
+
+  const { data: machineData } =
+    await supabase
+      .from('machine')
+      .select('*')
+      .eq('id', machineId)
+      .single()
+
+  let queue = []
+
+
+  // 🔥 ถ้ามี queue เดิม
+  if (machineData.queue) {
+
+    queue =
+      machineData.queue.split(',')
+
+  }
+
+  if (
+  machineData.owner === userId
+  &&
+  queue.length === 0
+) {
+
+  alert(
+    "You cannot queue your own machine unless someone is already waiting."
+  )
+
+  return
+
+}
+
+  // 🔥 กัน join ซ้ำ
+  if (queue.includes(userId)) {
+
+    alert("Already in queue")
+
+    return
+
+  }
+
+  // 🔥 จำนวนคนก่อนหน้า
+  const peopleAhead =
+    queue.length
+
+  // 🔥 confirm
+  const confirmed =
+    confirm(
+      `There are ${peopleAhead} people ahead of you.\n\nConfirm queue?`
+    )
+
+  if (!confirmed) return
+
+  // 🔥 เพิ่มเข้าคิว
+  queue.push(userId)
+
+  // 🔥 save
+  const { data, error } =
+    await supabase
+      .from('machine')
+      .update({
+        queue: queue.join(',')
+      })
+      .eq('id', machineId)
+
+  console.log(data)
+  console.log(error)
+
+}
+
+window.showExtend = function(machineId) {
+
+  extendUI[machineId] = true
+
+  loadStatus()
+
+}
+
+function notifyPickup(machineName) {
+
+  new Notification(
+    "Laundry System",
+    {
+      body:
+        `${machineName} is finished. Please pick up your laundry.`
+    }
+  )
+
+}
+
+await renderMachines()
+
+loadStatus()
+setInterval(async () => {
+
+  const { data } =
+    await supabase
+      .from('machine')
+      .select('*')
+
+  if (!data) return
+
+  data.forEach(machine => {
+
+    // 🔥 owner เท่านั้น
+    if (
+      machine.owner !== userId
+    ) return
+
+    // 🔥 ต้อง Finished
+    if (
+      machine.status !== 'Finished'
+    ) return
+
+    // 🔥 ต้องมี finished_at
+    if (!machine.finished_at)
+      return
+
+    const now = Date.now()
+
+    const finishedAgo =
+      now - machine.finished_at
+
+    // 🔥 ทุก 3 นาที
+    if (
+      finishedAgo >=
+      3 * 60 * 1000
+    ) {
+
+      notifyPickup(
+        machine.name
+      )
+
+    }
+
+  })
+
+}, 180000)
+
+setInterval(async () => {
+
+  const { data } =
+    await supabase
+      .from('machine')
+      .select('*')
+
+  if (!data) return
+
+  data.forEach(async machine => {
+
+    // 🔥 ต้องมีคนถูกเรียก
+    if (
+      !machine.current_queue_user
+    ) return
+
+    // 🔥 ต้องมีเวลาเรียก
+    if (
+      !machine.queue_called_at
+    ) return
+
+    const now = Date.now()
+
+// 🔥 machine ต้องยัง Available
+if (
+  machine.status !== "Available"
+) return
+
+    const elapsed =
+      now - machine.queue_called_at
+
+    // 🔥 เกิน 5 นาที
+    if (
+      elapsed >=
+      5 * 60 * 1000
+    ) {
+
+      let queue = []
+
+      if (
+        machine.queue &&
+        machine.queue !== ""
+      ) {
+
+        queue =
+          machine.queue.split(',')
+
+      }
+
+      // 🔥 remove คนปัจจุบัน
+      queue.shift()
+
+      // 🔥 ยังมี queue ต่อ
+      if (queue.length > 0) {
+
+        const nextUser =
+          queue[0]
+
+        await supabase
+          .from('machine')
+          .update({
+
+            current_queue_user:
+              nextUser,
+
+            queue:
+              queue.join(','),
+
+            queue_called_at:
+              Date.now()
+
+          })
+          .eq('id', machine.id)
+
+      }
+
+      // 🔥 ไม่มี queue แล้ว
+      else {
+
+        await supabase
+          .from('machine')
+          .update({
+
+            current_queue_user:
+              null,
+
+            queue:
+              "",
+
+            queue_called_at:
+              null
+
+          })
+          .eq('id', machine.id)
+
+      }
+
+    }
+
+  })
+
+}, 30000)
+
+supabase
+  .channel('machines')
+
+  .on(
+    'postgres_changes',
+    {
+      event: '*',
+      schema: 'public',
+      table: 'machine'
+    },
+
+    async payload => {
+
+       console.log(payload)
+
+       await renderMachines()
+
+       loadStatus()
+
+    }
+  )
+
+  .subscribe()
+</script>
+
+</body>
+</html>
