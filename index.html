@@ -7,6 +7,15 @@
   name="viewport"
   content="width=device-width, initial-scale=1.0"
 />
+<meta
+  name="apple-mobile-web-app-capable"
+  content="yes"
+/>
+
+<meta
+  name="mobile-web-app-capable"
+  content="yes"
+/>
   <style>
 
 * {
@@ -16,6 +25,8 @@
 body {
 
   margin: 0;
+  touch-action: manipulation;
+-webkit-overflow-scrolling: touch;
   padding: 40px 20px;
   overflow-x: hidden;
 -webkit-tap-highlight-color: transparent;
@@ -52,6 +63,13 @@ h1 {
 .machine {
   width: 100%;
   max-width: 340px;
+  position: relative;
+
+overflow: hidden;
+
+transform: translateZ(0);
+
+z-index: 1;
 
   background:
     rgba(255,255,255,0.7);
@@ -73,7 +91,6 @@ h1 {
 }
 
 .machine:hover {
-  transform: translateY(-4px);
 
   box-shadow:
     0 18px 40px
@@ -121,6 +138,13 @@ input:focus {
 }
 
 button {
+    -webkit-appearance: none;
+
+appearance: none;
+
+position: relative;
+
+z-index: 5;
   width: 100%;
 
   padding: 14px;
@@ -304,6 +328,9 @@ and
 }
 
 .status {
+    position: relative;
+
+z-index: 1;
 
   background:
     rgba(255,255,255,0.65);
@@ -325,6 +352,11 @@ and
 }
 button {
   touch-action: manipulation;
+}
+.machineIcon,
+.machineType {
+
+  pointer-events: none;
 }
 </style>
 
