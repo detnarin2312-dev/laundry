@@ -428,10 +428,7 @@ await supabase
 
   })
 
-alert(
-  `Send this code to LINE bot:\n\n${linkCode}`
-)
-
+await liff.sendMessages([ { type: "text", text: linkCode } ])
 
 console.log(profile)
 
