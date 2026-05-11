@@ -396,6 +396,20 @@ await liff.init({
   liffId: "2010042133-PO19a4Wa"
 })
 
+await liff.init({
+  liffId: "2010042133-PO19a4Wa"
+})
+
+// 🔥 ถ้าไม่ได้เปิดจาก LINE
+if (!liff.isInClient()) {
+
+  // 🔥 เด้งเข้า LINE app
+  window.location.href =
+    "https://liff.line.me/2010042133-PO19a4Wa"
+
+}
+
+
 if (!liff.isLoggedIn()) {
 
   liff.login()
@@ -428,7 +442,29 @@ await supabase
 
   })
 
-await liff.sendMessages([ { type: "text", text: linkCode } ])
+try {
+
+  await liff.sendMessages([
+    {
+      type: "text",
+      text: linkCode
+    }
+  ])
+
+  console.log(
+    "AUTO LINK SENT"
+  )
+
+}
+
+catch(err) {
+
+  console.log(
+    "SEND MESSAGE ERROR:",
+    err
+  )
+
+}
 
 console.log(profile)
 
