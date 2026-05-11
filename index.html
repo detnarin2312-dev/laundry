@@ -1209,12 +1209,34 @@ if (
     "🧺 You are using this machine"
 }
 
-const totalMinutes = 
-  machineData.total_minutes 
-    || 60 
-const totalMs = totalMinutes * 60 * 1000
-let ringEmoji = "🧺" 
-if ( machineData.name .toLowerCase() .includes("dry") ) { ringEmoji = "🌀" } renderProgressRing( machineId, remaining, totalMs, ringEmoji )
+const totalMinutes =
+
+  machineData.total_minutes
+  || 60
+
+const totalMs =
+  totalMinutes * 60 * 1000
+
+let ringEmoji = "🧺"
+
+if (
+  machineData.name
+  &&
+  machineData.name
+    .toLowerCase()
+    .includes("dry")
+) {
+
+  ringEmoji = "🌀"
+
+}
+
+renderProgressRing(
+  machineId,
+  remaining,
+  totalMs,
+  ringEmoji
+)
 
 
 document.getElementById(
