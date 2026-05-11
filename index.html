@@ -1286,28 +1286,52 @@ window.finishEarly =
       })
       .eq('id', machineId)
       
-      await fetch(
-  "https://hjeeirnzsihqdetikebw.supabase.co/functions/v1/dynamic-processor",
-  {
-    method: "POST",
+      try {
 
-    headers: {
-      "Content-Type":
-        "application/json"
-    },
+  console.log("SENDING LINE REQUEST")
 
-    
-    body: JSON.stringify({
+  const response =
+    await fetch(
+      "https://hjeeirnzsihqdetikebw.supabase.co/functions/v1/dynamic-processor",
+      {
 
-  userId:
-    machineData.owner,
+        method: "POST",
 
-  message:
-    `🧺 Machine finished early`
+        headers: {
+          "Content-Type":
+            "application/json"
+        },
 
-})
-  }
-)
+        body: JSON.stringify({
+
+          userId:
+            machineData.owner,
+
+          message:
+            `🧺 Machine finished early`
+
+        })
+
+      }
+    )
+
+  const result =
+    await response.text()
+
+  console.log(
+    "FETCH RESULT:",
+    result
+  )
+
+}
+catch(err) {
+
+  console.log(
+    "FETCH ERROR:",
+    err
+  )
+
+}
 
   console.log(data)
   console.log(error)
