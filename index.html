@@ -461,14 +461,6 @@ userId =
   profile.userId
 
 
-console.log(profile)
-
-console.log("LINE User ID:", userId)
-
-console.log("User ID:", userId)
-console.log("Supabase Connected!")
-
-
 async function renderMachines() {
 
   const { data, error } =
@@ -476,8 +468,6 @@ async function renderMachines() {
       .from('machine')
       .select('*')
       .order('id')
-
-  console.log(data)
 
   const container =
     document.getElementById("machinesContainer")
@@ -505,7 +495,6 @@ if (
 
   machineClass = "dryerCard"
 }
-    console.log("Rendering:", machine.name)
 
     container.innerHTML += `
 
@@ -568,8 +557,6 @@ async function loadStatus() {
     await supabase
       .from('machine')
       .select('*')
-
-  console.log(data)
 
   if (!data) return
 
@@ -898,9 +885,6 @@ if (
 })
   }
 )
-
-      console.log(data)
-      console.log(error)
       
     
       return
@@ -1158,8 +1142,6 @@ if (
 })
       .eq('id', machineId)
 
-  console.log(data)
-  console.log(error)
   startCountdown(machineId, endTime)  
   
   
@@ -1247,11 +1229,6 @@ delete timers[machineId]
 })
   }
 )
-
-
-    console.log(data)
-    console.log(error)
-
     return
   }
 
@@ -1270,9 +1247,6 @@ delete timers[machineId]
         queue_called_at: null
       })
       .eq('id', machineId)
-
-  console.log(data)
-  console.log(error)
 
 }
 
@@ -1303,9 +1277,6 @@ window.extendMachine = async function(machineId) {
         finished_at: Date.now()
       })
       .eq('id', machineId)
-
-  console.log(data)
-  console.log(error)
 
 }
 
@@ -1339,55 +1310,30 @@ window.finishEarly =
       })
       .eq('id', machineId)
       
-      try {
 
-  console.log("SENDING LINE REQUEST")
+await fetch(
+  "https://hjeeirnzsihqdetikebw.supabase.co/functions/v1/dynamic-processor",
+  {
 
-  const response =
-    await fetch(
-      "https://hjeeirnzsihqdetikebw.supabase.co/functions/v1/dynamic-processor",
-      {
+    method: "POST",
 
-        method: "POST",
+    headers: {
+      "Content-Type":
+        "application/json"
+    },
 
-        headers: {
-          "Content-Type":
-            "application/json"
-        },
+    body: JSON.stringify({
 
-        body: JSON.stringify({
+      userId:
+        machineData.owner,
 
-          userId:
-            machineData.owner,
+      message:
+        `🧺 Machine finished early`
 
-          message:
-            `🧺 Machine finished early`
+    })
 
-        })
-
-      }
-    )
-
-  const result =
-    await response.text()
-
-  console.log(
-    "FETCH RESULT:",
-    result
-  )
-
-}
-catch(err) {
-
-  console.log(
-    "FETCH ERROR:",
-    err
-  )
-
-}
-
-  console.log(data)
-  console.log(error)
+  }
+)
 
 }
 
@@ -1458,9 +1404,6 @@ window.joinQueue =
         queue: queue.join(',')
       })
       .eq('id', machineId)
-
-  console.log(data)
-  console.log(error)
 
 }
 
@@ -1638,8 +1581,6 @@ supabase
     },
 
     async payload => {
-
-       console.log(payload)
 
        loadStatus()
 
