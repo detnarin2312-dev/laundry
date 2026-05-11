@@ -355,6 +355,64 @@ button {
 }
 .machineIcon,
 .machineType {
+  
+.progressRing {
+
+  position: relative;
+
+  width: 90px;
+  height: 90px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.progressRing svg {
+
+  position: absolute;
+
+  top: 0;
+  left: 0;
+
+  transform: rotate(-90deg);
+}
+
+.progressRing circle {
+
+  fill: none;
+
+  stroke-width: 7;
+}
+
+.progressBg {
+
+  stroke:
+    rgba(255,255,255,0.35);
+}
+
+.progressBar {
+
+  stroke: #f59e0b;
+
+  stroke-linecap: round;
+
+  transition:
+    stroke-dashoffset 1s linear;
+}
+
+.progressText {
+
+  position: relative;
+
+  z-index: 2;
+
+  font-size: 18px;
+
+  font-weight: 700;
+
+  color: #0f172a;
+}
 
   pointer-events: none;
 }
@@ -392,10 +450,83 @@ const extendUI = {}
 
 let userId = null
 
+function renderProgressRing(
+  machineId,
+  remainingMs,
+  totalMs
+) {
+
+  const icon =
+    document.getElementById(
+      `icon-${machineId}`
+    )
+
+  if (!icon) return
+
+  const radius = 36
+
+  const circumference =
+    2 * Math.PI * radius
+
+  const progress =
+    remainingMs / totalMs
+
+  const offset =
+    circumference *
+    (1 - progress)
+
+  const minutes =
+    Math.ceil(
+      remainingMs /
+      1000 /
+      60
+    )
+
+  icon.innerHTML = `
+
+    <div class="progressRing">
+
+      <svg
+        width="90"
+        height="90"
+      >
+
+        <circle
+          class="progressBg"
+          cx="45"
+          cy="45"
+          r="${radius}"
+        />
+
+        <circle
+          class="progressBar"
+          cx="45"
+          cy="45"
+          r="${radius}"
+
+          stroke-dasharray="
+            ${circumference}
+          "
+
+          stroke-dashoffset="
+            ${offset}
+          "
+        />
+
+      </svg>
+
+      <div class="progressText">
+        ${minutes}m
+      </div>
+
+    </div>
+  `
+}
 
 await liff.init({
   liffId: "2010052545-VgxnTLpm"
 })
+
 
 // 🔥 ถ้าเปิดจาก browser ปกติ
 if (!liff.isInClient()) {
@@ -422,9 +553,9 @@ if (!liff.isInClient()) {
       <br>
 
       <a
-  href="
-  line://app/2010052545-VgxnTLpm
-  "
+        href="
+        line://app/2010052545-VgxnTLpm
+        "
         style="
           background:#06C755;
           color:white;
@@ -442,8 +573,12 @@ if (!liff.isInClient()) {
 
   `
 
-  return
+  throw new Error(
+    "LINE only"
+  )
+
 }
+
 
 if (!liff.isLoggedIn()) {
 
@@ -499,9 +634,13 @@ if (
 
         <div class="machineHeader">
 
-  <div class="machineIcon">
-    ${machineEmoji}
-  </div>
+  html id="ui1fix3"
+<div
+  class="machineIcon"
+  id="icon-${machine.id}"
+>
+  ${machineEmoji}
+</div>
 
   <div>
 
@@ -623,6 +762,11 @@ else {
   document.getElementById(
   `status-${machine.id}`
 ).innerHTML =
+
+document.getElementById(
+  `icon-${machine.id}`
+).innerHTML = machineEmoji
+
 
   `🟢 Available
 
@@ -1057,6 +1201,17 @@ if (
 
     "🧺 You are using this machine"
 }
+
+
+const totalMs =
+  60 * 60 * 1000
+
+renderProgressRing(
+  machineId,
+  remaining,
+  totalMs
+)
+
 
 document.getElementById(
   `status-${machineId}`
