@@ -1235,28 +1235,6 @@ if (
                 end_time: null
             })
           .eq('id', machineId)
-
-          await fetch(
-  "https://hjeeirnzsihqdetikebw.supabase.co/functions/v1/dynamic-processor",
-  {
-    method: "POST",
-
-    headers: {
-      "Content-Type":
-        "application/json"
-    },
-
-    body: JSON.stringify({
-
-  userId:
-  ownerId,
-
-  message:
-    `🧺 Machine finished`
-
-})
-  }
-)
       
     
       return
@@ -1617,27 +1595,7 @@ delete timers[machineId]
         })
         .eq('id', machineId)
 
-        await fetch(
-  "https://hjeeirnzsihqdetikebw.supabase.co/functions/v1/dynamic-processor",
-  {
-    method: "POST",
-
-    headers: {
-      "Content-Type":
-        "application/json"
-    },
-
-    body: JSON.stringify({
-
-  userId:
-     nextUser,
-
-  message:
-    `🔔 It's your turn now`
-
-})
-  }
-)
+      
     return
   }
 
@@ -1715,30 +1673,6 @@ window.pickupForOwner =
 
     })
     .eq('id', machineId)
-
-  await fetch(
-    "https://hjeeirnzsihqdetikebw.supabase.co/functions/v1/dynamic-processor",
-    {
-
-      method: "POST",
-
-      headers: {
-        "Content-Type":
-          "application/json"
-      },
-
-      body: JSON.stringify({
-
-        userId:
-          nextUser,
-
-        message:
-          "🧺 You can now use the machine"
-
-      })
-
-    }
-  )
 
 }
 
@@ -1911,155 +1845,6 @@ await renderMachines()
 
 loadStatus()
 
-
-setInterval(async () => {
-
-  const { data } =
-    await supabase
-      .from('machine')
-      .select('*')
-
-  if (!data) return
-
-  data.forEach(async machine => {
-
-    // 🔥 ต้องมีคนถูกเรียก
-    if (
-      !machine.current_queue_user
-    ) return
-
-    // 🔥 ต้องมีเวลาเรียก
-    if (
-      !machine.queue_called_at
-    ) return
-
-    const now = Date.now()
-
-// 🔥 machine ต้องยัง Available
-if (
-  machine.status !== "Available"
-) return
-
-    const elapsed =
-      now - machine.queue_called_at
-
-    // 🔥 เกิน 5 นาที
-    if (
-      elapsed >=
-      5 * 60 * 1000
-    ) {
-
-      let queue = []
-
-      if (
-        machine.queue &&
-        machine.queue !== ""
-      ) {
-
-        queue =
-          machine.queue.split(',')
-
-      }
-
-      // 🔥 remove คนปัจจุบัน
-      queue.shift()
-
-      await fetch(
-  "https://hjeeirnzsihqdetikebw.supabase.co/functions/v1/dynamic-processor",
-  {
-    method: "POST",
-
-    headers: {
-      "Content-Type":
-        "application/json"
-    },
-
-    
-    body: JSON.stringify({
-
-  userId:
-  machine.current_queue_user,
-
-  message:
-    `⌛ Queue expired`
-
-})
-  }
-)
-
-      // 🔥 ยังมี queue ต่อ
-      if (queue.length > 0) {
-
-        const nextUser =
-          queue[0]
-
-        await supabase
-          .from('machine')
-          .update({
-
-            current_queue_user:
-              nextUser,
-
-            queue:
-              queue.join(','),
-
-            queue_called_at:
-              Date.now()
-
-          })
-          .eq('id', machine.id)
-
-          await fetch(
-  "https://hjeeirnzsihqdetikebw.supabase.co/functions/v1/dynamic-processor",
-  {
-    method: "POST",
-
-
-    headers: {
-      "Content-Type":
-        "application/json"
-    },
-
-    
-    body: JSON.stringify({
-
-  userId:
-  nextUser,
-
-  message:
-    `🔔 It's your turn now`
-
-})
-  }
-)
-      }
-
-      // 🔥 ไม่มี queue แล้ว
-      else {
-
-        await supabase
-          .from('machine')
-          .update({
-
-            current_queue_user:
-              null,
-
-            queue:
-              "",
-
-            queue_called_at:
-              null
-
-          })
-          .eq('id', machine.id)
-
-      }
-
-    }
-
-  })
-
-}, 30000)
 
 supabase
   .channel('machines')
