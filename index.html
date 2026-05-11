@@ -353,9 +353,7 @@ z-index: 1;
 button {
   touch-action: manipulation;
 }
-.machineIcon,
-.machineType {
-  
+
 .progressRing {
 
   position: relative;
@@ -414,8 +412,6 @@ button {
   color: #0f172a;
 }
 
-  pointer-events: none;
-}
 </style>
 
 </head>
@@ -634,7 +630,6 @@ if (
 
         <div class="machineHeader">
 
-  html id="ui1fix3"
 <div
   class="machineIcon"
   id="icon-${machine.id}"
@@ -762,6 +757,18 @@ else {
   document.getElementById(
   `status-${machine.id}`
 ).innerHTML =
+
+let machineEmoji = "🧺"
+
+if (
+  machine.name
+    .toLowerCase()
+    .includes("dry")
+) {
+
+  machineEmoji = "🌀"
+
+}
 
 document.getElementById(
   `icon-${machine.id}`
