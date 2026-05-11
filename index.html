@@ -362,13 +362,17 @@ button {
 
 </head>
 
+
+
 <body>
 
 
 <h1>🧺 Laundry System</h1>
+<br>
 
 <div id="machinesContainer"></div>
 
+<script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
 <script type="module">
 
 import { createClient }
@@ -386,24 +390,27 @@ const supabase =
 const timers = {}
 const extendUI = {}
 
-let userId =
-  localStorage.getItem("userId")
+let userId = null
 
-// 🔥 ถ้ายังไม่มี userId
-if (!userId) {
+await liff.init({
+  liffId: "2010042133-PO19a4Wa"
+})
 
-  userId =
-    "user_" +
-    Math.random()
-      .toString(36)
-      .substring(2, 8)
+if (!liff.isLoggedIn()) {
 
-  localStorage.setItem(
-    "userId",
-    userId
-  )
+  liff.login()
 
 }
+
+const profile =
+  await liff.getProfile()
+
+userId =
+  profile.userId
+
+console.log(profile)
+
+console.log("LINE User ID:", userId)
 
 console.log("User ID:", userId)
 console.log("Supabase Connected!")
@@ -815,6 +822,25 @@ if (
             })
           .eq('id', machineId)
 
+          await fetch(
+  "https://hjeeirnzsihqdetikebw.supabase.co/functions/v1/dynamic-processor",
+  {
+    method: "POST",
+
+    mode: "cors",
+
+    headers: {
+      "Content-Type":
+        "application/json"
+    },
+
+    body: JSON.stringify({
+      message:
+        `🧺 Machine finished`
+    })
+  }
+)
+
       console.log(data)
       console.log(error)
       
@@ -1123,6 +1149,8 @@ delete timers[machineId]
       await supabase
         .from('machine')
         .update({
+
+
           status: 'Available',
           end_time: null,
           finished_at: null,
@@ -1139,6 +1167,26 @@ delete timers[machineId]
             Date.now()
         })
         .eq('id', machineId)
+
+        await fetch(
+  "https://hjeeirnzsihqdetikebw.supabase.co/functions/v1/dynamic-processor",
+  {
+    method: "POST",
+
+    mode: "cors",
+
+    headers: {
+      "Content-Type":
+        "application/json"
+    },
+
+    body: JSON.stringify({
+      message:
+        `🔔 It's your turn now`
+    })
+  }
+)
+
 
     console.log(data)
     console.log(error)
@@ -1223,6 +1271,25 @@ window.finishEarly =
         end_time: null
       })
       .eq('id', machineId)
+      
+      await fetch(
+  "https://hjeeirnzsihqdetikebw.supabase.co/functions/v1/dynamic-processor",
+  {
+    method: "POST",
+
+    mode: "cors",
+
+    headers: {
+      "Content-Type":
+        "application/json"
+    },
+
+    body: JSON.stringify({
+      message:
+        `🧺 Machine finished early`
+    })
+  }
+)
 
   console.log(data)
   console.log(error)
@@ -1367,6 +1434,25 @@ if (
       // 🔥 remove คนปัจจุบัน
       queue.shift()
 
+      await fetch(
+  "https://hjeeirnzsihqdetikebw.supabase.co/functions/v1/dynamic-processor",
+  {
+    method: "POST",
+
+    mode: "cors",
+
+    headers: {
+      "Content-Type":
+        "application/json"
+    },
+
+    body: JSON.stringify({
+      message:
+        `⌛ Queue expired`
+    })
+  }
+)
+
       // 🔥 ยังมี queue ต่อ
       if (queue.length > 0) {
 
@@ -1389,6 +1475,24 @@ if (
           })
           .eq('id', machine.id)
 
+          await fetch(
+  "https://hjeeirnzsihqdetikebw.supabase.co/functions/v1/dynamic-processor",
+  {
+    method: "POST",
+
+    mode: "cors",
+
+    headers: {
+      "Content-Type":
+        "application/json"
+    },
+
+    body: JSON.stringify({
+      message:
+        `🔔 It's your turn now`
+    })
+  }
+)
       }
 
       // 🔥 ไม่มี queue แล้ว
@@ -1439,6 +1543,8 @@ supabase
   )
 
   .subscribe()
+
+  
 </script>
 
 </body>
