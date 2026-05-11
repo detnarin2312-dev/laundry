@@ -392,23 +392,61 @@ const extendUI = {}
 
 let userId = null
 
-await liff.init({
-  liffId: "2010042133-PO19a4Wa"
-})
 
 await liff.init({
   liffId: "2010042133-PO19a4Wa"
 })
 
-// 🔥 ถ้าไม่ได้เปิดจาก LINE
+// 🔥 ถ้าเปิดจาก browser ปกติ
 if (!liff.isInClient()) {
 
-  // 🔥 เด้งเข้า LINE app
-  window.location.href =
-    "https://liff.line.me/2010042133-PO19a4Wa"
+  document.body.innerHTML = `
+
+    <div
+      style="
+        display:flex;
+        flex-direction:column;
+        justify-content:center;
+        align-items:center;
+        height:100vh;
+        font-family:Arial;
+        text-align:center;
+        padding:30px;
+      "
+    >
+
+      <h1>
+        Open in LINE
+      </h1>
+
+      <br>
+
+      <a
+        href="
+        https://liff.line.me/2010042133-PO19a4Wa
+        "
+        style="
+          background:#06C755;
+          color:white;
+          padding:18px 30px;
+          border-radius:18px;
+          text-decoration:none;
+          font-size:20px;
+          font-weight:bold;
+        "
+      >
+        Open LINE App
+      </a>
+
+    </div>
+
+  `
+
+  throw new Error(
+    "Open in LINE only"
+  )
 
 }
-
 
 if (!liff.isLoggedIn()) {
 
