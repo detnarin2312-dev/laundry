@@ -423,7 +423,7 @@ if (!liff.isInClient()) {
 
       <a
   href="
-  line://app/2010042133-PO19a4Wa
+  line://app/2010052545-VgxnTLpm
   "
         style="
           background:#06C755;
@@ -442,10 +442,7 @@ if (!liff.isInClient()) {
 
   `
 
-  throw new Error(
-    "Open in LINE only"
-  )
-
+  return
 }
 
 if (!liff.isLoggedIn()) {
@@ -746,22 +743,67 @@ if (machine.owner === userId) {
 
 }
 
-  // 🔥 ถ้าไม่ใช่ owner
-  else {
+// 🔥 ถ้าไม่ใช่ owner
+else {
+
+  let pickupButton = ""
+
+  const now =
+    Date.now()
+
+  const elapsed =
+    now - machine.finished_at
+
+  // 🔥 ถ้าเกิน 5 นาที
+  // และเป็นคิวแรก
+  if (
+
+    elapsed >=
+    5 * 60 * 1000
+
+    &&
+
+    machine.current_queue_user ===
+    userId
+
+  ) {
+
+    pickupButton = `
+
+      <br><br>
+
+      <button
+        onclick="
+          pickupForOwner(
+            ${machine.id}
+          )
+        "
+      >
+        Pick Up For Owner
+      </button>
+
+    `
+  }
 
   document.getElementById(
     `status-${machine.id}`
   ).innerHTML =
 
     `🟠 Finished<br>
+
      at:
      ${finishedTime.toLocaleTimeString()}
+
      ${queueInfo}
+
      <br><br>
 
-     Waiting for owner pickup`
+     Waiting for owner pickup
 
-    }
+     ${pickupButton}`
+
+}
+
 
   // 🔥 disable controls
   document.getElementById(
@@ -1247,6 +1289,89 @@ delete timers[machineId]
         queue_called_at: null
       })
       .eq('id', machineId)
+
+}
+
+window.pickupForOwner =
+  async function(machineId) {
+
+  const { data: machineData } =
+    await supabase
+      .from('machine')
+      .select('*')
+      .eq('id', machineId)
+      .single()
+
+  let queue = []
+
+  if (
+    machineData.queue &&
+    machineData.queue !== ""
+  ) {
+
+    queue =
+      machineData.queue.split(',')
+
+  }
+
+  // 🔥 ต้องมี queue
+  if (queue.length === 0)
+    return
+
+  const nextUser =
+    queue[0]
+
+  await supabase
+    .from('machine')
+    .update({
+
+      status:
+        'Available',
+
+      owner:
+        null,
+
+      finished_at:
+        null,
+
+      end_time:
+        null,
+
+      extended_minutes:
+        null,
+
+      current_queue_user:
+        nextUser,
+
+      queue_called_at:
+        Date.now()
+
+    })
+    .eq('id', machineId)
+
+  await fetch(
+    "https://hjeeirnzsihqdetikebw.supabase.co/functions/v1/dynamic-processor",
+    {
+
+      method: "POST",
+
+      headers: {
+        "Content-Type":
+          "application/json"
+      },
+
+      body: JSON.stringify({
+
+        userId:
+          nextUser,
+
+        message:
+          "🧺 You can now use the machine"
+
+      })
+
+    }
+  )
 
 }
 
