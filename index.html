@@ -460,49 +460,6 @@ const profile =
 userId =
   profile.userId
 
-const linkCode =
-  "LINK-" +
-  Math.floor(
-    1000 + Math.random() * 9000
-  )
-
-console.log(linkCode)
-
-await supabase
-  .from("line_links")
-  .insert({
-
-    link_code:
-      linkCode,
-
-    liff_user_id:
-      userId
-
-  })
-
-try {
-
-  await liff.sendMessages([
-    {
-      type: "text",
-      text: linkCode
-    }
-  ])
-
-  console.log(
-    "AUTO LINK SENT"
-  )
-
-}
-
-catch(err) {
-
-  console.log(
-    "SEND MESSAGE ERROR:",
-    err
-  )
-
-}
 
 console.log(profile)
 
