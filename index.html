@@ -327,6 +327,46 @@ and
     );
 }
 
+.machine.available {
+
+  background:
+    linear-gradient(
+      135deg,
+      rgba(220,252,231,0.95),
+      rgba(255,255,255,0.75)
+    );
+}
+
+.machine.inuse {
+
+  background:
+    linear-gradient(
+      135deg,
+      rgba(254,249,195,0.95),
+      rgba(255,255,255,0.75)
+    );
+}
+
+.machine.finished {
+
+  background:
+    linear-gradient(
+      135deg,
+      rgba(254,215,170,0.95),
+      rgba(255,255,255,0.75)
+    );
+}
+
+.machine.reserved {
+
+  background:
+    linear-gradient(
+      135deg,
+      rgba(219,234,254,0.95),
+      rgba(255,255,255,0.75)
+    );
+}
+
 .status {
     position: relative;
 
@@ -358,8 +398,8 @@ button {
 
   position: relative;
 
-  width: 90px;
-  height: 90px;
+  width: 78px;
+  height: 78px;
 
   display: flex;
   align-items: center;
@@ -392,32 +432,79 @@ button {
 .progressBar { stroke: #f59e0b; stroke-linecap: round; transition: stroke-dashoffset 1s linear; transform-origin: center; transform: rotate(0deg); }
 
 
-.progressEmoji {
+.ringCenter {
 
-  position: absolute;
+  width: 64px;
+  height: 64px;
 
-  font-size: 28px;
+  border-radius: 20px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  font-size: 34px;
+
+  background:
+    rgba(255,255,255,0.55);
+
+  backdrop-filter: blur(8px);
+
+  box-shadow:
+    inset 0 1px 4px rgba(255,255,255,0.7),
+    0 6px 14px rgba(0,0,0,0.08);
 
   z-index: 2;
-
-  top: 18px;
 }
 
-.progressText {
+.queueVisual {
 
-  position: absolute;
+  display: flex;
+  align-items: center;
+  gap: 8px;
 
-  bottom: 8px;
+  flex-wrap: wrap;
 
-  width: 100%;
+  margin-top: 12px;
+}
 
-  text-align: center;
+.queuePerson {
+
+  width: 28px;
+  height: 28px;
+
+  border-radius: 999px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
 
   font-size: 14px;
 
-  font-weight: 700;
+  background:
+    rgba(148,163,184,0.25);
 
-  color: #0f172a;
+  color: #475569;
+
+  border:
+    1px solid rgba(148,163,184,0.3);
+}
+
+.queuePerson.you {
+
+  background:
+    rgba(16,185,129,0.18);
+
+  color: #059669;
+
+  border:
+    1px solid rgba(16,185,129,0.45);
+
+  transform: scale(1.15);
+
+  box-shadow:
+    0 0 0 4px
+    rgba(16,185,129,0.12);
 }
 
 </style>
@@ -454,6 +541,69 @@ const extendUI = {}
 
 let userId = null
 
+function setMachineState(
+  machineId,
+  state
+) {
+
+  const card =
+    document.querySelector(
+      `[data-machine-id="${machineId}"]`
+    )
+
+  if (!card) return
+
+  card.classList.remove(
+    "available",
+    "inuse",
+    "finished",
+    "reserved"
+  )
+
+  card.classList.add(state)
+}
+
+function renderQueueVisual(
+  queue
+) {
+
+  if (
+    !queue ||
+    queue.length === 0
+  ) {
+
+    return `
+      <br>
+      No queue
+    `
+  }
+
+  let html = `
+    <div class="queueVisual">
+  `
+
+  queue.forEach(person => {
+
+    const isYou =
+      person === userId
+
+    html += `
+
+      <div class="
+        queuePerson
+        ${isYou ? 'you' : ''}
+      ">
+        👤
+      </div>
+    `
+  })
+
+  html += `</div>`
+
+  return html
+}
+
+
 function renderProgressRing( machineId, remainingMs, totalMs, emoji ) {
 
   const icon =
@@ -463,7 +613,7 @@ function renderProgressRing( machineId, remainingMs, totalMs, emoji ) {
 
   if (!icon) return
 
-  const radius = 36
+  const radius = 33
 
   const circumference =
     2 * Math.PI * radius
@@ -484,22 +634,22 @@ icon.innerHTML = `
 
   <div class="progressRing">
 
-    <svg
-      width="90"
-      height="90"
-    >
+
+<svg
+  width="78"
+  height="78"
+>
+
 
       <circle
         class="progressBg"
-        cx="45"
-        cy="45"
+        cx="39" cy="39"
         r="${radius}"
       />
 
       <circle
         class="progressBar"
-        cx="45"
-        cy="45"
+        cx="39" cy="39"
         r="${radius}"
         stroke-dasharray="${circumference}"
         stroke-dashoffset="${offset}"
@@ -507,17 +657,15 @@ icon.innerHTML = `
 
     </svg>
 
-    <div class="progressEmoji">
-      ${emoji}
-    </div>
+<div class="ringCenter">
+  ${emoji}
+</div>
 
-    <div class="progressText">
-      ${minutes}m
-    </div>
 
   </div>
 `
 }
+
 
 await liff.init({
   liffId: "2010052545-VgxnTLpm"
@@ -626,7 +774,10 @@ if (
 
     container.innerHTML += `
 
-      <div class="machine ${machineClass}">
+<div
+  class="machine ${machineClass}"
+  data-machine-id="${machine.id}"
+>
 
         <div class="machineHeader">
 
@@ -734,8 +885,11 @@ if (queuePosition !== -1) {
 
       `<br><br>
 
-       You are #${queuePosition + 1}
-       in queue`
+You are #${queuePosition + 1}
+in queue
+
+${renderQueueVisual(queue)}
+`
 
   }
 
@@ -748,9 +902,12 @@ else {
 
     `<br><br>
 
-     Queue:
-     ${queue.length}
-     people`
+Queue:
+${queue.length}
+people
+
+${renderQueueVisual(queue)}
+`
 }
 
 // 🔥 reset icon ก่อน
@@ -769,6 +926,11 @@ if (
 document.getElementById(
   `icon-${machine.id}`
 ).innerHTML = machineEmoji
+
+setMachineState(
+  machine.id,
+  "available"
+)
 
 // 🔥 reset status ก่อน
 document.getElementById(
@@ -794,6 +956,11 @@ if (
   &&
   machine.current_queue_user !== userId
 ) {
+  
+setMachineState(
+  machine.id,
+  "reserved"
+)
 
   document.getElementById(
     `button-${machine.id}`
@@ -810,7 +977,14 @@ if (
     machine.status === 'In Use'
     &&
     machine.end_time
+    
   ) {
+
+setMachineState(
+  machine.id,
+  "inuse"
+)
+
     if (!timers[machine.id]) {
 
     startCountdown(
@@ -829,6 +1003,11 @@ if (
 
   }
   if (machine.status === 'Finished') {
+
+setMachineState(
+  machine.id,
+  "finished"
+)
 
   const finishedTime =
     new Date(machine.finished_at)
@@ -1156,8 +1335,11 @@ if (queuePosition !== -1) {
 
       `<br><br>
 
-       You are #${queuePosition + 1}
-       in queue`
+You are #${queuePosition + 1}
+in queue
+
+${renderQueueVisual(queue)}
+`
 
   }
 
@@ -1170,9 +1352,12 @@ else {
 
     `<br><br>
 
-     Queue:
-     ${queue.length}
-     people`
+Queue:
+${queue.length}
+people
+
+${renderQueueVisual(queue)}
+`
 }
 
 if (machineData.extended_minutes) {
