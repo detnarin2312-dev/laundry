@@ -408,6 +408,31 @@ const profile =
 userId =
   profile.userId
 
+const linkCode =
+  "LINK-" +
+  Math.floor(
+    1000 + Math.random() * 9000
+  )
+
+console.log(linkCode)
+
+await supabase
+  .from("line_links")
+  .insert({
+
+    link_code:
+      linkCode,
+
+    liff_user_id:
+      userId
+
+  })
+
+alert(
+  `Send this code to LINE bot:\n\n${linkCode}`
+)
+
+
 console.log(profile)
 
 console.log("LINE User ID:", userId)
