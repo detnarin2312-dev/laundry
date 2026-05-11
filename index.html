@@ -753,11 +753,7 @@ else {
      people`
 }
 
-  // 🔥 reset status ก่อน
-  document.getElementById(
-  `status-${machine.id}`
-).innerHTML =
-
+// 🔥 reset icon ก่อน
 let machineEmoji = "🧺"
 
 if (
@@ -774,6 +770,10 @@ document.getElementById(
   `icon-${machine.id}`
 ).innerHTML = machineEmoji
 
+// 🔥 reset status ก่อน
+document.getElementById(
+  `status-${machine.id}`
+).innerHTML =
 
   `🟢 Available
 
