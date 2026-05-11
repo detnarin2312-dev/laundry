@@ -389,15 +389,7 @@ button {
     rgba(255,255,255,0.35);
 }
 
-.progressBar {
-
-  stroke: #f59e0b;
-
-  stroke-linecap: round;
-
-  transition:
-    stroke-dashoffset 1s linear;
-}
+.progressBar { stroke: #f59e0b; stroke-linecap: round; transition: stroke-dashoffset 1s linear; transform-origin: center; transform: rotate(0deg); }
 
 
 .progressEmoji {
@@ -462,11 +454,7 @@ const extendUI = {}
 
 let userId = null
 
-function renderProgressRing(
-  machineId,
-  remainingMs,
-  totalMs
-) {
+function renderProgressRing( machineId, remainingMs, totalMs, emoji ) {
 
   const icon =
     document.getElementById(
@@ -492,7 +480,43 @@ function renderProgressRing(
       60
     )
 
-  icon.innerHTML = ` <div class="progressRing"> <svg width="90" height="90" > <circle class="progressBg" cx="45" cy="45" r="${radius}" /> <circle class="progressBar" cx="45" cy="45" r="${radius}" stroke-dasharray=" ${circumference} " stroke-dashoffset=" ${offset} " /> </svg> <div class="progressEmoji"> ${ machineId .toString() ? "🧺" : "🌀" } </div> <div class="progressText"> ${minutes}m </div> </div> `
+icon.innerHTML = `
+
+  <div class="progressRing">
+
+    <svg
+      width="90"
+      height="90"
+    >
+
+      <circle
+        class="progressBg"
+        cx="45"
+        cy="45"
+        r="${radius}"
+      />
+
+      <circle
+        class="progressBar"
+        cx="45"
+        cy="45"
+        r="${radius}"
+        stroke-dasharray="${circumference}"
+        stroke-dashoffset="${offset}"
+      />
+
+    </svg>
+
+    <div class="progressEmoji">
+      ${emoji}
+    </div>
+
+    <div class="progressText">
+      ${minutes}m
+    </div>
+
+  </div>
+`
 }
 
 await liff.init({
@@ -1185,12 +1209,12 @@ if (
     "🧺 You are using this machine"
 }
 
-const totalMs = machineData.total_minutes * 60 * 1000
-renderProgressRing(
-  machineId,
-  remaining,
-  totalMs
-)
+const totalMinutes = 
+  machineData.total_minutes 
+    || 60 
+const totalMs = totalMinutes * 60 * 1000
+let ringEmoji = "🧺" 
+if ( machineData.name .toLowerCase() .includes("dry") ) { ringEmoji = "🌀" } renderProgressRing( machineId, remaining, totalMs, ringEmoji )
 
 
 document.getElementById(
