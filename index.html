@@ -835,9 +835,14 @@ if (
     },
 
     body: JSON.stringify({
-      message:
-        `🧺 Machine finished`
-    })
+
+  userId:
+    machineData.owner,
+
+  message:
+    `🧺 Machine finished`
+
+})
   }
 )
 
@@ -1181,9 +1186,14 @@ delete timers[machineId]
     },
 
     body: JSON.stringify({
-      message:
-        `🔔 It's your turn now`
-    })
+
+  userId:
+    machineData.owner,
+
+  message:
+    `🔔 It's your turn now`
+
+})
   }
 )
 
@@ -1284,10 +1294,16 @@ window.finishEarly =
         "application/json"
     },
 
+    
     body: JSON.stringify({
-      message:
-        `🧺 Machine finished early`
-    })
+
+  userId:
+    machineData.owner,
+
+  message:
+    `🧺 Machine finished early`
+
+})
   }
 )
 
@@ -1446,10 +1462,16 @@ if (
         "application/json"
     },
 
+    
     body: JSON.stringify({
-      message:
-        `⌛ Queue expired`
-    })
+
+  userId:
+    machineData.owner,
+
+  message:
+    `⌛ Queue expired`
+
+})
   }
 )
 
@@ -1487,10 +1509,16 @@ if (
         "application/json"
     },
 
+    
     body: JSON.stringify({
-      message:
-        `🔔 It's your turn now`
-    })
+
+  userId:
+    machineData.owner,
+
+  message:
+    `🔔 It's your turn now`
+
+})
   }
 )
       }
