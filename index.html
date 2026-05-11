@@ -399,13 +399,29 @@ button {
     stroke-dashoffset 1s linear;
 }
 
-.progressText {
 
-  position: relative;
+.progressEmoji {
+
+  position: absolute;
+
+  font-size: 28px;
 
   z-index: 2;
 
-  font-size: 18px;
+  top: 18px;
+}
+
+.progressText {
+
+  position: absolute;
+
+  bottom: 8px;
+
+  width: 100%;
+
+  text-align: center;
+
+  font-size: 14px;
 
   font-weight: 700;
 
@@ -464,9 +480,7 @@ function renderProgressRing(
   const circumference =
     2 * Math.PI * radius
 
-  const progress =
-    remainingMs / totalMs
-
+  const progress = Math.max( 0, Math.min( 1, remainingMs / totalMs ) )
   const offset =
     circumference *
     (1 - progress)
@@ -478,45 +492,7 @@ function renderProgressRing(
       60
     )
 
-  icon.innerHTML = `
-
-    <div class="progressRing">
-
-      <svg
-        width="90"
-        height="90"
-      >
-
-        <circle
-          class="progressBg"
-          cx="45"
-          cy="45"
-          r="${radius}"
-        />
-
-        <circle
-          class="progressBar"
-          cx="45"
-          cy="45"
-          r="${radius}"
-
-          stroke-dasharray="
-            ${circumference}
-          "
-
-          stroke-dashoffset="
-            ${offset}
-          "
-        />
-
-      </svg>
-
-      <div class="progressText">
-        ${minutes}m
-      </div>
-
-    </div>
-  `
+  icon.innerHTML = ` <div class="progressRing"> <svg width="90" height="90" > <circle class="progressBg" cx="45" cy="45" r="${radius}" /> <circle class="progressBar" cx="45" cy="45" r="${radius}" stroke-dasharray=" ${circumference} " stroke-dashoffset=" ${offset} " /> </svg> <div class="progressEmoji"> ${ machineId .toString() ? "🧺" : "🌀" } </div> <div class="progressText"> ${minutes}m </div> </div> `
 }
 
 await liff.init({
@@ -1209,10 +1185,7 @@ if (
     "🧺 You are using this machine"
 }
 
-
-const totalMs =
-  60 * 60 * 1000
-
+const totalMs = machineData.total_minutes * 60 * 1000
 renderProgressRing(
   machineId,
   remaining,
@@ -1336,6 +1309,7 @@ if (
       .from('machine')
       .update({
       status: 'In Use',
+      total_minutes: minutes,
       end_time: endTime,
       queue: queue.join(','),
       owner: userId,
