@@ -788,6 +788,8 @@ const { data: latestMachine } =
     .select('*')
     .eq('id', machineId)
     .single()
+    const ownerId =
+  latestMachine.owner
 
 // 🔥 ถ้าไม่ใช่ In Use แล้ว
 // ห้าม overwrite
@@ -837,7 +839,7 @@ if (
     body: JSON.stringify({
 
   userId:
-    machineData.owner,
+  ownerId,
 
   message:
     `🧺 Machine finished`
@@ -1188,7 +1190,7 @@ delete timers[machineId]
     body: JSON.stringify({
 
   userId:
-    machineData.owner,
+     nextUser,
 
   message:
     `🔔 It's your turn now`
@@ -1269,6 +1271,12 @@ window.finishEarly =
   delete timers[machineId]
 
   extendUI[machineId] = false
+  const { data: machineData } =
+  await supabase
+    .from('machine')
+    .select('*')
+    .eq('id', machineId)
+    .single()
   
 
   // 🔥 เปลี่ยนเป็น Finished
@@ -1466,7 +1474,7 @@ if (
     body: JSON.stringify({
 
   userId:
-    machineData.owner,
+  machine.current_queue_user,
 
   message:
     `⌛ Queue expired`
@@ -1513,7 +1521,7 @@ if (
     body: JSON.stringify({
 
   userId:
-    machineData.owner,
+  nextUser,
 
   message:
     `🔔 It's your turn now`
